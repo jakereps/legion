@@ -9,7 +9,7 @@ test:
 build: $(BINDIR)/$(BINARY)
 
 $(BINDIR)/$(BINARY):
-	go build -o $(BINDIR)/$(BINARY) ./cmd/legion/...
+	go build -o $(BINDIR)/$(BINARY) ./...
 
 $(BINDIR):
 	mkdir -p $(BINDIR)

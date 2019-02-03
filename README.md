@@ -1,2 +1,2 @@
 # legion
-A concurrent demultiplexer written in Go
+A fastq demultiplexer
