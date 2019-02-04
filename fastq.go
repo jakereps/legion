@@ -7,13 +7,16 @@ import (
 	"os"
 )
 
-// FastQ is
-type FastQ struct {
+// FASTQ is
+type FASTQ struct {
 	scanner *bufio.Scanner
 }
 
-// NewFastQ makes
-func NewFastQ(p string) (*FastQ, error) {
+// Index is the index file of the reads
+type Index struct{}
+
+// NewFASTQ makes
+func NewFASTQ(p string) (*FASTQ, error) {
 	f, err := os.Open(p)
 	if err != nil {
 		return nil, err
@@ -29,7 +32,7 @@ func NewFastQ(p string) (*FastQ, error) {
 	}
 	s.Split(bufio.ScanRunes)
 
-	return &FastQ{
+	return &FASTQ{
 		scanner: s,
 	}, nil
 }
@@ -72,7 +75,7 @@ type Sequence struct {
 	Data    []Nucleobase
 }
 
-func (f *FastQ) Read() (*Sequence, error) {
+func (f *FASTQ) Read() (*Sequence, error) {
 	s := &Sequence{}
 
 	// Line 1 begins with a '@' character and is followed by a sequence
