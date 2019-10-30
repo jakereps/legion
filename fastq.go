@@ -7,16 +7,19 @@ import (
 	"os"
 )
 
-// FASTQ is
+// FASTQ is the sequence data.
 type FASTQ struct {
 	scanner *bufio.Scanner
 }
 
-// Index is the index file of the reads
-type Index struct{}
+// Index is the index file of the reads. Sometimes called Barcodes.
+type Index struct {
+	scanner *bufio.Scanner
+}
 
-// NewFASTQ makes
-func NewFASTQ(p string) (*FASTQ, error) {
+// newScanner takes a filepath to a gzip'd file and returns a scanner
+// set to split by character.
+func newScanner(p string) (*bufio.Scanner, error) {
 	f, err := os.Open(p)
 	if err != nil {
 		return nil, err
@@ -31,6 +34,27 @@ func NewFASTQ(p string) (*FASTQ, error) {
 		return nil, err
 	}
 	s.Split(bufio.ScanRunes)
+	return s, nil
+}
+
+// NewIndex initializes an Index for a given filepath.
+func NewIndex(p string) (*Index, error) {
+	s, err := newScanner(p)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Index{
+		scanner: s,
+	}, nil
+}
+
+// NewFASTQ makes
+func NewFASTQ(p string) (*FASTQ, error) {
+	s, err := newScanner(p)
+	if err != nil {
+		return nil, err
+	}
 
 	return &FASTQ{
 		scanner: s,

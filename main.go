@@ -49,7 +49,14 @@ func SingleEnd(fwd, idx string) (*SingleEndFASTQ, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &SingleEndFASTQ{Sequences: f}, nil
+	i, err := NewIndex(idx)
+	if err != nil {
+		return nil, err
+	}
+	return &SingleEndFASTQ{
+		Sequences: f,
+		Index:     i,
+	}, nil
 }
 
 // PairedEnd ...
@@ -62,9 +69,14 @@ func PairedEnd(fwd, rev, idx string) (*PairedEndFASTQ, error) {
 	if err != nil {
 		return nil, err
 	}
+	i, err := NewIndex(idx)
+	if err != nil {
+		return nil, err
+	}
 	return &PairedEndFASTQ{
 		Forward: f,
 		Reverse: r,
+		Index:   i,
 	}, nil
 }
 
