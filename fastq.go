@@ -172,6 +172,8 @@ type PairedEndFASTQ struct {
 
 // Demux ...
 func (s *SingleEndFASTQ) Demux() (*Demux, error) {
+	s.Sequences.Read()
+	// s.Index.Read()
 	return &Demux{
 		Paired: false,
 	}, nil
