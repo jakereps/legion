@@ -13,7 +13,7 @@ type File struct {
 	scanner *bufio.Scanner
 }
 
-func (f *File) Read() (*Sequence, error) {
+func (f *File) Next() (*Sequence, error) {
 
 	// Line 1 begins with a '@' character and is followed by a sequence
 	// identifier and an optional description (like a FASTA title line).
@@ -85,7 +85,7 @@ type PairedEndFASTQ struct {
 }
 
 // Demux ...
-func (s *SingleEndFASTQ) Demux() error {
+func (s *SingleEndFASTQ) Read() (*MultiplexedSequence, error) {
 	var (
 		seq *Sequence
 		bar *Sequence
@@ -96,28 +96,28 @@ func (s *SingleEndFASTQ) Demux() error {
 	)
 	for {
 		i++
-		seq, err = s.Sequences.Read()
+		seq, err = s.Sequences.Next()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			return fmt.Errorf("failed reading seq #%d: %w", i, err)
+			return nil, fmt.Errorf("failed reading seq #%d: %w", i, err)
 		}
-		bar, err = s.Index.Read()
+		bar, err = s.Index.Next()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			return fmt.Errorf("failed reading index #%d: %w", i, err)
+			return nil, fmt.Errorf("failed reading index #%d: %w", i, err)
 		}
 		fmt.Println(seq.String(), bar.String())
 	}
-	return nil
+	return nil, nil
 }
 
 // Demux ...
-func (p *PairedEndFASTQ) Demux() error {
-	return nil
+func (p *PairedEndFASTQ) Read() (*MultiplexedSequence, error) {
+	return nil, nil
 }
 
 // SingleEnd ...
@@ -206,6 +206,13 @@ var baseFromChar = map[string]Base{
 type Nucleobase struct {
 	Base    Base
 	Quality uint8
+}
+
+type MultiplexedSequence struct {
+	paired bool
+	fwd    *Sequence
+	rev    *Sequence
+	index  *Sequence
 }
 
 // Sequence represents a full sequence read

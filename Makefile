@@ -9,7 +9,7 @@ test:
 build: $(BINDIR)/$(BINARY)
 
 $(BINDIR)/$(BINARY):
-	go build -o $(BINDIR)/$(BINARY) ./...
+	go build -o $(BINDIR)/$(BINARY) ./cmd/...
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
@@ -17,4 +17,4 @@ $(BINDIR):
 .PHONY: clean
 clean:
 	go clean
-	rm $(BINDIR)/$(BINARY)
+	rm $(BINDIR)/$(BINARY) || true
