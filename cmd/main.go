@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jakereps/legion"
+	"github.com/jakereps/legion/fastq"
 )
 
 func main() {
@@ -23,14 +24,14 @@ func main() {
 	)
 	switch {
 	case *fwd != "" && *rev == "":
-		d, err = legion.SingleEnd(*fwd, *idx)
+		d, err = fastq.SingleEnd(*fwd, *idx)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "unable to create single end fastq: "+err.Error())
 			os.Exit(1)
 		}
 		fmt.Println(d)
 	case *fwd != "" && *rev != "":
-		d, err = legion.PairedEnd(*fwd, *rev, *idx)
+		d, err = fastq.PairedEnd(*fwd, *rev, *idx)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "unable to create paired end fastq: "+err.Error())
 			os.Exit(1)
@@ -44,7 +45,7 @@ func main() {
 		os.Exit(9001)
 	}
 
-	_, err = d.Demux()
+	err = d.Demux()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed demultiplexing files: "+err.Error())
 		os.Exit(1)

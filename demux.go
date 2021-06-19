@@ -7,5 +7,5 @@ type Demux struct {
 
 // Demuxer ...
 type Demuxer interface {
-	Demux() (*Demux, error)
+	Demux() error
 }
