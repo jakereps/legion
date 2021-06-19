@@ -1,4 +1,4 @@
-package main
+package legion
 
 import (
 	"bufio"
@@ -100,47 +100,49 @@ type Sequence struct {
 }
 
 func (f *FASTQ) Read() (*Sequence, error) {
-	s := &Sequence{}
 
 	// Line 1 begins with a '@' character and is followed by a sequence
 	// identifier and an optional description (like a FASTA title line).
+	var id string
 	for f.scanner.Scan() {
 		t := f.scanner.Text()
 		if t == "\n" {
 			break
 		}
-		s.ID += t
+		id += t
 	}
 
 	// Line 2 is the raw sequence letters.
+	var seqs []Nucleobase
 	for f.scanner.Scan() {
 		t := f.scanner.Text()
 		if t == "\n" {
 			break
 		}
 		if v, ok := baseFromChar[t]; ok {
-			s.Data = append(s.Data, Nucleobase{Base: v})
+			seqs = append(seqs, Nucleobase{Base: v})
 		}
 	}
 
 	// Line 3 begins with a '+' character and is optionally followed by the same
 	// sequence identifier (and any description) again.
+	var div string
 	for f.scanner.Scan() {
 		t := f.scanner.Text()
 		if t == "\n" {
 			break
 		}
-		s.Divider += t
+		div += t
 	}
 
 	// Line 4 encodes the quality values for the sequence in Line 2, and must
 	// contain the same number of symbols as letters in the sequence.
-	for i := range s.Data {
+	for i := range seqs {
 		f.scanner.Scan()
 		t := f.scanner.Text()
 		// taking the 0 index on a string gets the byte value
 		// NOTE: make the phred score configurable probably
-		s.Data[i].Quality = t[0] - 33
+		seqs[i].Quality = t[0] - 33
 	}
 
 	// kill the newline handle EOF
@@ -148,5 +150,73 @@ func (f *FASTQ) Read() (*Sequence, error) {
 		return nil, io.EOF
 	}
 
-	return s, nil
+	return &Sequence{
+		ID:      id,
+		Divider: div,
+		Data:    seqs,
+	}, nil
+}
+
+// SingleEndFASTQ ...
+type SingleEndFASTQ struct {
+	Sequences *FASTQ
+	Index     *Index
+}
+
+// PairedEndFASTQ ...
+type PairedEndFASTQ struct {
+	Forward *FASTQ
+	Reverse *FASTQ
+	Index   *Index
+}
+
+// Demux ...
+func (s *SingleEndFASTQ) Demux() (*Demux, error) {
+	return &Demux{
+		Paired: false,
+	}, nil
+}
+
+// Demux ...
+func (p *PairedEndFASTQ) Demux() (*Demux, error) {
+	return &Demux{
+		Paired: true,
+	}, nil
+}
+
+// SingleEnd ...
+func SingleEnd(fwd, idx string) (*SingleEndFASTQ, error) {
+	f, err := NewFASTQ(fwd)
+	if err != nil {
+		return nil, err
+	}
+	i, err := NewIndex(idx)
+	if err != nil {
+		return nil, err
+	}
+	return &SingleEndFASTQ{
+		Sequences: f,
+		Index:     i,
+	}, nil
+}
+
+// PairedEnd ...
+func PairedEnd(fwd, rev, idx string) (*PairedEndFASTQ, error) {
+	f, err := NewFASTQ(fwd)
+	if err != nil {
+		return nil, err
+	}
+	r, err := NewFASTQ(rev)
+	if err != nil {
+		return nil, err
+	}
+	i, err := NewIndex(idx)
+	if err != nil {
+		return nil, err
+	}
+	return &PairedEndFASTQ{
+		Forward: f,
+		Reverse: r,
+		Index:   i,
+	}, nil
 }
